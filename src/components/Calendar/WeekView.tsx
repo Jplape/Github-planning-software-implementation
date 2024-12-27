@@ -1,4 +1,4 @@
-import { format, addDays, isSameDay, parseISO } from 'date-fns';
+import { format, addDays, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Plus } from 'lucide-react';
 import { Task } from '../../store/taskStore';
@@ -10,6 +10,7 @@ interface WeekViewProps {
   tasks: Task[];
   onNewTask: (date: string) => void;
   onEditTask: (task: Task) => void;
+  onContextMenu: (e: React.MouseEvent, task: Task) => void;
   draggedOverDate: string | null;
 }
 
@@ -21,6 +22,7 @@ export default function WeekView({
   tasks,
   onNewTask,
   onEditTask,
+  onContextMenu,
   draggedOverDate
 }: WeekViewProps) {
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -37,15 +39,6 @@ export default function WeekView({
     const height = (task.duration / 60) * HOUR_HEIGHT;
     return { top, height };
   };
-
-  const getTasksForTimeSlot = (tasks: Task[], hour: number) => {
-    return tasks.filter(task => {
-      const [taskHour] = task.startTime.split(':').map(Number);
-      const taskEndHour = taskHour + Math.ceil(task.duration / 60);
-      return taskHour <= hour && taskEndHour > hour;
-    });
-  };
-
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       {/* En-tête des jours */}
@@ -121,6 +114,7 @@ export default function WeekView({
                         task={task}
                         onEdit={onEditTask}
                         compact={height < 60}
+                        onContextMenu={(e) => onContextMenu(e, task)}
                       />
                     </div>
                   );

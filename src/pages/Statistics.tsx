@@ -1,26 +1,23 @@
 import { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie } from 'recharts';
 import { Download } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
-import { useTeamStore } from '../store/teamStore';
 import StatisticsFilters from '../components/Statistics/StatisticsFilters';
 import { useNavigate } from 'react-router-dom';
-import { subMonths, subYears, isWithinInterval, startOfYear } from 'date-fns';
+import { subMonths, isWithinInterval, startOfYear } from 'date-fns';
 
 export default function Statistics() {
   const navigate = useNavigate();
   const { tasks } = useTaskStore();
-  const { members } = useTeamStore();
   const [period, setPeriod] = useState('6m');
   const [filters, setFilters] = useState({
     technician: 'all',
     client: 'all',
   });
 
-  const clients = useMemo(() => 
-    Array.from(new Set(tasks.map(task => task.client))),
-    [tasks]
-  );
+  const clients = useMemo(() => {
+    return Array.from(new Set(tasks.map(task => task.client)));
+  }, [tasks]);
 
   const filteredTasks = useMemo(() => {
     const now = new Date();
@@ -92,8 +89,6 @@ export default function Statistics() {
       { name: 'En retard', value: (delayed / total) * 100 },
     ];
   }, [filteredTasks]);
-
-  const COLORS = ['#4F46E5', '#818CF8', '#C7D2FE', '#E0E7FF'];
 
   const handleBarClick = (data: any) => {
     if (data && data.activePayload) {
@@ -196,10 +191,7 @@ export default function Statistics() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {clientSatisfaction.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>

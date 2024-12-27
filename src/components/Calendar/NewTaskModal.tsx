@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Task } from '../../store/taskStore';
 import TaskForm from '../Tasks/TaskForm';
@@ -15,11 +14,33 @@ export default function NewTaskModal({ isOpen, onClose, selectedDate, taskToEdit
   const { addTask, updateTask } = useTaskStore();
 
   const handleSubmit = (formData: Partial<Task>) => {
-    if (taskToEdit) {
-      updateTask(taskToEdit.id, formData);
-    } else {
-      addTask(formData);
+    // Validation stricte des champs obligatoires
+    if (!formData.title || !formData.date) {
+      console.error("Title and date are required to create or update a task.");
+      return;
     }
+
+    // Complétez les champs requis avec des valeurs par défaut
+    const completeFormData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: formData.title,
+      date: formData.date,
+      startTime: formData.startTime || '00:00', // Valeur par défaut
+      duration: formData.duration || 60,       // Valeur par défaut (1h)
+      technicianId: formData.technicianId || '', // Facultatif
+      client: formData.client || 'Unknown',    // Valeur par défaut pour `client`
+      status: formData.status || 'pending',    // Valeur par défaut pour `status`
+      priority: formData.priority || 'low',    // Valeur par défaut pour `priority`
+    };
+    
+
+    // Mise à jour ou création de la tâche
+    if (taskToEdit) {
+      updateTask(taskToEdit.id, formData); // Mise à jour avec des données partielles
+    } else {
+      addTask(completeFormData); // Création avec des données complètes
+    }
+
+    // Fermer le modal après soumission
     onClose();
   };
 

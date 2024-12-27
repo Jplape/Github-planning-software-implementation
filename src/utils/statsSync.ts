@@ -1,6 +1,5 @@
 import { Task } from '../store/taskStore';
 import { TeamMember } from '../store/teamStore';
-import { isToday, isPast, isFuture } from 'date-fns';
 
 export interface Stats {
   activeInterventions: number;

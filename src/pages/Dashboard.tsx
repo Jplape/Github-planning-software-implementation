@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Clock, Users, Wrench, Building } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useTeamStore } from '../store/teamStore';

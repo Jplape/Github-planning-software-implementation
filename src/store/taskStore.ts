@@ -1,3 +1,4 @@
+export type { Task } from '../types/task';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useCalendarStore } from './calendarStore';
@@ -24,7 +25,7 @@ export const useTaskStore = create<TaskState>()(
       lastTaskId: 0,
       lastUpdate: Date.now(),
 
-      addTask: (task) => {
+      addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
         const now = new Date().toISOString();
         const nextId = get().lastTaskId + 1;
         const taskId = `TASK-${nextId.toString().padStart(3, '0')}`;
@@ -44,7 +45,7 @@ export const useTaskStore = create<TaskState>()(
         useCalendarStore.getState().updateLastSync();
       },
 
-      updateTask: (id, updates) => {
+      updateTask: (id: string, updates: Partial<Task>) => {
         set((state) => ({
           tasks: state.tasks.map((task) =>
             task.id === id
@@ -56,7 +57,7 @@ export const useTaskStore = create<TaskState>()(
         useCalendarStore.getState().updateLastSync();
       },
 
-      deleteTask: (id) => {
+      deleteTask: (id: string) => {
         set((state) => ({
           tasks: state.tasks.filter((task) => task.id !== id),
           lastUpdate: Date.now()
@@ -64,7 +65,7 @@ export const useTaskStore = create<TaskState>()(
         useCalendarStore.getState().updateLastSync();
       },
 
-      moveTask: (taskId, newDate) => {
+      moveTask: (taskId: string, newDate: string) => {
         const task = get().tasks.find(t => t.id === taskId);
         if (!task) return;
 
@@ -101,18 +102,18 @@ export const useTaskStore = create<TaskState>()(
         useCalendarStore.getState().updateLastSync();
       },
 
-      getTasksByDate: (date) => {
+      getTasksByDate: (date: string) => {
         return get().tasks.filter((task) => task.date === date);
       },
 
-      getTasksByDateRange: (startDate, endDate) => {
+      getTasksByDateRange: (startDate: Date, endDate: Date) => {
         return get().tasks.filter((task) => {
           const taskDate = new Date(task.date);
           return taskDate >= startDate && taskDate <= endDate;
         });
       },
 
-      getTechnicianTasks: (technicianId, date) => {
+      getTechnicianTasks: (technicianId: string, date: string) => {
         return get().tasks.filter(
           task => task.technicianId === technicianId && task.date === date
         );

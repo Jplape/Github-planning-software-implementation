@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Search, Download, Filter, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import NewReportForm from '../components/Reports/NewReportForm';
 import ReportCard from '../components/Reports/ReportCard';
 import StatusBadge from '../components/Reports/StatusBadge';
 
@@ -48,19 +47,12 @@ const reports: Report[] = [
 export default function InterventionReports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [isNewReportModalOpen, setIsNewReportModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending' | 'in_progress'>('all');
 
   const handleExport = (format: string) => {
     toast.success(`Export en ${format} démarré`);
   };
-
-  const handleCreateReport = (reportData: any) => {
-    toast.success('Rapport créé avec succès');
-    setIsNewReportModalOpen(false);
-  };
-
-  const filteredReports = reports.filter(report => {
+   const filteredReports = reports.filter(report => {
     const matchesSearch = 
       report.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,8 +82,7 @@ export default function InterventionReports() {
             Exporter
           </button>
           <button
-            onClick={() => setIsNewReportModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+             className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
           >
             <Plus className="h-5 w-5 mr-2" />
             Nouveau rapport
@@ -196,11 +187,6 @@ export default function InterventionReports() {
         </div>
       )}
 
-      <NewReportForm
-        isOpen={isNewReportModalOpen}
-        onClose={() => setIsNewReportModalOpen(false)}
-        onSubmit={handleCreateReport}
-      />
     </div>
   );
 }

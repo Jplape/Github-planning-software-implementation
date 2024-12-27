@@ -160,9 +160,3 @@ export const useTeamStore = create<TeamState>((set, get) => ({
 }));
 
 // Écouter les changements de tâches pour mettre à jour la charge de travail
-useTaskStore.subscribe(
-  (state) => state.tasks,
-  () => {
-    useTeamStore.getState().syncWorkload();
-  }
-);

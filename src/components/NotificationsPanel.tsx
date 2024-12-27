@@ -2,7 +2,6 @@ import { Bell, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { format, isToday } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 interface NotificationsPanelProps {
   onClose: () => void;

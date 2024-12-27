@@ -3,7 +3,6 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Breadcrumbs from './Breadcrumbs';
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

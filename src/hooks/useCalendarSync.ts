@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { format, parseISO, isValid } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 import { useTaskStore } from '../store/taskStore';
 import { useCalendarStore } from '../store/calendarStore';
 import { filterTasksForDateRange, groupTasksByDate } from '../utils/calendarViewSync';

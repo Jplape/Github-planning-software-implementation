@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Search, Calendar, User, MapPin, FileText } from 'lucide-react';
+import { X, Search, Calendar, User, MapPin } from 'lucide-react';
 import { useTaskStore } from '../../store/taskStore';
 import { useTeamStore } from '../../store/teamStore';
 import { format } from 'date-fns';

@@ -8,7 +8,7 @@ interface AlertCardProps {
   link: string;
 }
 
-export default function AlertCard({ type, message, icon: Icon, color, link }: AlertCardProps) {
+export default function AlertCard({ message, icon: Icon, color, link }: AlertCardProps) {
   return (
     <a
       href={link}
