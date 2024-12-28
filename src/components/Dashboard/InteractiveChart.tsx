@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Task } from '../../store/taskStore';
-import { format, startOfWeek, addDays } from 'date-fns';
+import { format, startOfWeek, addDays, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface InteractiveChartProps {
@@ -15,36 +15,46 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
   const generateWeekData = useMemo(() => {
     const currentDate = new Date();
     const weekStart = startOfWeek(currentDate, { locale: fr });
+    const weekEnd = addDays(weekStart, 6);
     
-    return Array.from({ length: 7 }, (_, index) => {
+    const weekRange = `${format(weekStart, 'dd MMMM', { locale: fr })} - ${format(weekEnd, 'dd MMMM yyyy', { locale: fr })}`;
+    
+    const data = Array.from({ length: 7 }, (_, index) => {
       const date = addDays(weekStart, index);
       const dateStr = format(date, 'yyyy-MM-dd');
       const dayTasks = tasks.filter(task => task.date === dateStr);
       
       return {
         name: format(date, 'EEE', { locale: fr }),
+        fullDate: format(date, 'dd/MM', { locale: fr }),
         date: dateStr,
         completed: dayTasks.filter(task => task.status === 'completed').length,
         inProgress: dayTasks.filter(task => task.status === 'in_progress').length,
         pending: dayTasks.filter(task => task.status === 'pending').length,
         unassigned: dayTasks.filter(task => !task.technicianId).length,
+        isToday: isToday(date)
       };
     });
+
+    return { data, weekRange };
   }, [tasks]);
-  const data = generateWeekData;
+
+  const { data, weekRange } = generateWeekData;
 
   interface TooltipProps {
     active?: boolean;
-    payload?: { value: number; dataKey: string; payload: { date: string } }[];
+    payload?: { value: number; dataKey: string; payload: { date: string; fullDate: string } }[];
     label?: string;
   }
 
   const CustomTooltip = ({ active, payload = [], label }: TooltipProps) => {
     if (active && payload.length > 0) {
       const total = payload.reduce((sum: number, entry: any) => sum + entry.value, 0);
+      const date = payload[0].payload.fullDate;
+      
       return (
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+          <p className="text-sm font-medium text-gray-900 mb-2">{label} ({date})</p>
           {payload.map((entry: any, index: number) => (
             <div 
               key={index}
@@ -85,7 +95,7 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
 
   const CustomLegend = ({ payload }: LegendProps) => {
     if (!payload || payload.length === 0) {
-      return null; // Retourne null si payload est undefined ou vide
+      return null;
     }
   
     return (
@@ -115,7 +125,10 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-medium text-gray-900">Suivi hebdomadaire</h3>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Suivi hebdomadaire</h3>
+          <p className="text-sm text-gray-500 mt-1">{weekRange}</p>
+        </div>
         <div className="text-sm text-gray-500">
           Cliquez sur les barres ou la légende pour filtrer
         </div>
@@ -132,7 +145,24 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" aria-label="Day of the week" />
+            <XAxis 
+              dataKey="name" 
+              aria-label="Day of the week"
+              tick={({ x, y, payload }) => (
+                <g transform={`translate(${x},${y})`}>
+                  <text 
+                    x={0} 
+                    y={0} 
+                    dy={16} 
+                    textAnchor="middle" 
+                    fill={payload.isToday ? '#4F46E5' : '#6B7280'}
+                    className={payload.isToday ? 'font-medium' : ''}
+                  >
+                    {payload.value}
+                  </text>
+                </g>
+              )}
+            />
             <YAxis aria-label="Number of tasks" />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
