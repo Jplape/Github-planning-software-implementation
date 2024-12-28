@@ -64,7 +64,7 @@ export default function MonthView({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 h-[calc(100vh-16rem)]">
+<div className="grid grid-cols-7 h-auto">
         {weeks.map((week) => (
           week.map((day) => (
             <DroppableDay
@@ -73,13 +73,13 @@ export default function MonthView({
               isOver={draggedOverDate === day.dateStr}
             >
               <div
-                className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
-                  !day.isCurrentMonth ? 'bg-gray-50' : 'bg-white'
+                className={`min-h-[150px] p-3 border-r border-b last:border-r-0 ${
+                  !day.isCurrentMonth ? 'bg-gray-100' : 'bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-sm font-medium ${
-                    !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
+                    !day.isCurrentMonth ? 'text-gray-500' : 'text-gray-900'
                   }`}>
                     {format(day.date, 'd')}
                   </span>

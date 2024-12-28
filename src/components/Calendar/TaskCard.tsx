@@ -2,6 +2,8 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Clock, AlertCircle, User, MapPin } from 'lucide-react';
 import { Task } from '../../store/taskStore';
+import { Menu, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
 import { useTeamStore } from '../../store/teamStore';
 
 interface TaskCardProps {
@@ -16,11 +18,11 @@ interface TaskCardProps {
 export default function TaskCard({ 
   task, 
   onEdit, 
-  onContextMenu,
   compact = false,
   style = {} 
 }: TaskCardProps) {
   const { members } = useTeamStore();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const assignedTechnician = task.technicianId 
     ? members.find(m => m.id === Number(task.technicianId))
     : null;
@@ -86,6 +88,41 @@ export default function TaskCard({
     }
   };
 
+  const handleContextMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleContextMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleViewDetails = () => {
+    handleContextMenuClose();
+    // Logique pour afficher les détails de la tâche
+    console.log('Voir les détails:', task);
+  };
+
+  const handleViewTechnician = () => {
+    // Logique pour afficher le technicien assigné
+    handleContextMenuClose();
+    if (assignedTechnician) {
+      console.log('Technicien:', assignedTechnician.name);
+    } else {
+      console.log('Aucun technicien assigné');
+    }
+  };
+
+  const handleReport = () => {
+    // Logique pour afficher le rapport d'intervention
+    handleContextMenuClose();
+    if (task.reportNumber) {
+      console.log('Rapport d\'intervention:', task.reportNumber);
+    } else {
+      console.log('Rapport d\'intervention à rédiger');
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -99,7 +136,7 @@ export default function TaskCard({
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        onContextMenu(e, task);
+      handleContextMenuOpen(e);
       }}
       className={`
         group relative rounded-lg border cursor-move transition-all duration-200
@@ -111,12 +148,22 @@ export default function TaskCard({
     >
       <div className="flex items-start justify-between mb-1">
         <span className={`font-medium ${priorityStyles.text} ${compact ? 'text-xs' : 'text-sm'} truncate flex-1`}>
+          {task.number} - 
           {task.title}
         </span>
         {task.priority === 'high' && !compact && (
           <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 ml-1" />
         )}
-      </div>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleContextMenuClose}
+      >
+        <MenuItem onClick={handleViewDetails}>Voir les détails</MenuItem>
+        <MenuItem onClick={handleViewTechnician}>Voir le technicien</MenuItem>
+        <MenuItem onClick={handleReport}>Rapport d'intervention</MenuItem>
+      </Menu>
+    </div>
 
       <div className={`flex flex-col ${compact ? 'gap-0.5' : 'gap-1'} flex-1`}>
         <div className="flex items-center text-xs text-gray-600">

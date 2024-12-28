@@ -1,4 +1,5 @@
 export interface Task {
+  number: number;
   id: string;
   title: string;
   client: string;
@@ -15,4 +16,5 @@ export interface Task {
   serialNumber?: string;
   createdAt: string;
   updatedAt: string;
+  reportNumber?: string;
 }
