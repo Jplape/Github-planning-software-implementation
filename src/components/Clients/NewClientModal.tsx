@@ -70,8 +70,11 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
         addClient({
           ...formData,
           status: 'active',
-          equipment: []
+          equipment: [],
+          installations: 0, // Valeur par défaut
+          lastService: new Date().toISOString() // Par exemple, date actuelle
         });
+        
         toast.success('Client ajouté avec succès');
         onClose();
       } catch (error) {

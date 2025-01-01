@@ -9,7 +9,7 @@ interface TaskContextMenuProps {
   onClose: () => void;
 }
 
-export default function TaskContextMenu({ task, position, onClose }: TaskContextMenuProps) {
+export default function TaskContextMenu({ task, position }: TaskContextMenuProps) {
   const { members } = useTeamStore();
   const technician = task.technicianId ? 
     members.find(m => m.id === Number(task.technicianId)) : null;

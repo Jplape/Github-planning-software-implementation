@@ -25,6 +25,8 @@ export interface Client {
   equipment: Equipment[];
   createdAt: string;
   updatedAt: string;
+  installations: number; // Ajout de la propriété installations
+  lastService: string;   // Ajout de la propriété lastService
 }
 
 interface ClientState {
@@ -38,12 +40,11 @@ interface ClientState {
 }
 
 const initialClients: Client[] = [
-  {
-    id: 1,
-    name: 'Hôpital Central',
-    address: '123 Rue de Paris, 75001 Paris',
-    phone: '+33 1 23 45 67 89',
-    email: 'contact@hopital-central.fr',
+  { id: 1,
+    name: 'Hôpital HIAOBO',
+    address: 'PK10, Libreville',
+    phone: '',
+    email: 'g.bouroubou@hotmail.fr',
     status: 'active',
     equipment: [
       {
@@ -58,7 +59,9 @@ const initialClients: Client[] = [
       }
     ],
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    updatedAt: '2024-01-01T00:00:00Z',
+    installations: 0,
+    lastService: '2024-01-01T00:00:00Z'
   },
   {
     id: 2,
@@ -81,7 +84,9 @@ const initialClients: Client[] = [
       }
     ],
     createdAt: '2024-01-02T00:00:00Z',
-    updatedAt: '2024-01-02T00:00:00Z'
+    updatedAt: '2024-01-02T00:00:00Z',
+    installations: 0,
+    lastService: '2024-01-02T00:00:00Z'
   }
 ];
 
@@ -90,74 +95,131 @@ export const useClientStore = create<ClientState>()(
     (set) => ({
       clients: initialClients,
 
-      addClient: (client) => set((state) => {
-        const now = new Date().toISOString();
-        const newClient = {
-          ...client,
-          id: Math.max(0, ...state.clients.map((c) => c.id)) + 1,
-          createdAt: now,
-          updatedAt: now
+      addClient: (client: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
+        if (!client.name || !client.address || !client.email) {
+          console.error('Invalid client data');
+          return;
+        }
+        set((state) => {
+          const now = new Date().toISOString();
+          const newClient = {
+            ...client,
+            id: Math.max(0, ...state.clients.map((c) => c.id)) + 1,
+            createdAt: now,
+            updatedAt: now
+          };
+          return { clients: [...state.clients, newClient] };
+        });
+      },
+
+      updateClient: (id: number, updates: Partial<Client>) => set((state) => {
+        const clientExists = state.clients.some((client) => client.id === id);
+        if (!clientExists) {
+          console.error('Client not found');
+          return state;
+        }
+        return {
+          clients: state.clients.map((client) =>
+            client.id === id
+              ? { ...client, ...updates, updatedAt: new Date().toISOString() }
+              : client
+          )
         };
-        return { clients: [...state.clients, newClient] };
       }),
 
-      updateClient: (id, updates) => set((state) => ({
-        clients: state.clients.map((client) =>
-          client.id === id
-            ? { ...client, ...updates, updatedAt: new Date().toISOString() }
-            : client
-        )
-      })),
+      deleteClient: (id: number) => set((state) => {
+        const clientExists = state.clients.some((client) => client.id === id);
+        if (!clientExists) {
+          console.error('Client not found');
+          return state;
+        }
+        return {
+          clients: state.clients.filter((client) => client.id !== id)
+        };
+      }),
 
-      deleteClient: (id) => set((state) => ({
-        clients: state.clients.filter((client) => client.id !== id)
-      })),
-
-      addEquipment: (clientId, equipment) => set((state) => ({
-        clients: state.clients.map((client) =>
-          client.id === clientId
-            ? {
-                ...client,
-                equipment: [
-                  ...client.equipment,
-                  {
-                    ...equipment,
-                    id: `eq-${Date.now()}`
+      addEquipment: (clientId: number, equipment: Omit<Equipment, 'id'>) => {
+        if (!equipment.name || !equipment.status) {
+          console.error('Invalid equipment data');
+          return;
+        }
+        set((state) => {
+          const clientExists = state.clients.some((client) => client.id === clientId);
+          if (!clientExists) {
+            console.error('Client not found');
+            return state;
+          }
+          return {
+            clients: state.clients.map((client) =>
+              client.id === clientId
+                ? {
+                    ...client,
+                    equipment: [
+                      ...client.equipment,
+                      {
+                        ...equipment,
+                        id: `eq-${Math.random().toString(36).substr(2, 9)}`
+                      }
+                    ],
+                    updatedAt: new Date().toISOString()
                   }
-                ],
-                updatedAt: new Date().toISOString()
-              }
-            : client
-        )
-      })),
+                : client
+            )
+          };
+        });
+      },
 
-      updateEquipment: (clientId, equipmentId, updates) => set((state) => ({
-        clients: state.clients.map((client) =>
-          client.id === clientId
-            ? {
-                ...client,
-                equipment: client.equipment.map((eq) =>
-                  eq.id === equipmentId
-                    ? { ...eq, ...updates }
-                    : eq
-                ),
-                updatedAt: new Date().toISOString()
-              }
-            : client
-        )
-      })),
+      updateEquipment: (clientId: number, equipmentId: string, updates: Partial<Equipment>) => set((state) => {
+        const client = state.clients.find((client) => client.id === clientId);
+        if (!client) {
+          console.error('Client not found');
+          return state;
+        }
+        const equipmentExists = client.equipment.some((eq) => eq.id === equipmentId);
+        if (!equipmentExists) {
+          console.error('Equipment not found');
+          return state;
+        }
+        return {
+          clients: state.clients.map((client) =>
+            client.id === clientId
+              ? {
+                  ...client,
+                  equipment: client.equipment.map((eq) =>
+                    eq.id === equipmentId
+                      ? { ...eq, ...updates }
+                      : eq
+                  ),
+                  updatedAt: new Date().toISOString()
+                }
+              : client
+          )
+        };
+      }),
 
-      deleteEquipment: (clientId, equipmentId) => set((state) => ({
-        clients: state.clients.map((client) =>
-          client.id === clientId
-            ? {
-                ...client,
-                equipment: client.equipment.filter((eq) => eq.id !== equipmentId),
-                updatedAt: new Date().toISOString()
-              }
-            : client
-        )
-      }))
+      deleteEquipment: (clientId: number, equipmentId: string) => set((state) => {
+        const client = state.clients.find((client) => client.id === clientId);
+        if (!client) {
+          console.error('Client not found');
+          return state;
+        }
+        const equipmentExists = client.equipment.some((eq) => eq.id === equipmentId);
+        if (!equipmentExists) {
+          console.error('Equipment not found');
+          return state;
+        }
+        return {
+          clients: state.clients.map((client) =>
+            client.id === clientId
+              ? {
+                  ...client,
+                  equipment: client.equipment.filter((eq) => eq.id !== equipmentId),
+                  updatedAt: new Date().toISOString()
+                }
+              : client
+          )
+        };
+      })
     }),
     {
       name: 'client-storage',

@@ -1,6 +1,6 @@
 import { Task } from '../store/taskStore';
 import { TeamMember } from '../store/teamStore';
-import { format, isToday, isFuture } from 'date-fns';
+import { isToday, isFuture } from 'date-fns';
 
 export function calculateTeamWorkload(tasks: Task[], members: TeamMember[]) {
   const updates = members.map(member => {

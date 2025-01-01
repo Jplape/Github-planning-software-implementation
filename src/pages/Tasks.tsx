@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Plus, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
-import TaskList from '../components/Tasks/TaskList';
 import TaskFilters from '../components/Tasks/TaskFilters';
 import NewTaskModal from '../components/Calendar/NewTaskModal';
 import { filterTasks } from '../utils/taskFilters';
@@ -35,8 +34,6 @@ export default function Tasks() {
 
   // Get unique clients and equipments for filters
   const clients = Array.from(new Set(tasks.map(task => task.client)));
-  const equipments = Array.from(new Set(tasks.filter(task => task.equipment).map(task => task.equipment)));
-
   const sortedAndFilteredTasks = useMemo(() => {
     let filteredTasks = filterTasks(
       tasks.filter(task =>
@@ -136,7 +133,6 @@ export default function Tasks() {
           <TaskFilters
             onFilterChange={setFilters}
             clients={clients}
-            equipments={equipments}
           />
         </div>
 

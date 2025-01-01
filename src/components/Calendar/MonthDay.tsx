@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, ChevronDown } from 'lucide-react';
 import { Task } from '../../store/taskStore';
 import { DroppableDay } from './DroppableDay';
 import TaskBadge from './TaskBadge';

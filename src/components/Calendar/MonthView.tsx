@@ -65,8 +65,8 @@ export default function MonthView({
       </div>
 
       <div className="grid grid-cols-7 h-[calc(100vh-16rem)]">
-        {weeks.map((week, weekIndex) => (
-          week.map((day, dayIndex) => (
+        {weeks.map((week) => (
+          week.map((day) => (
             <DroppableDay
               key={day.dateStr}
               date={day.dateStr}

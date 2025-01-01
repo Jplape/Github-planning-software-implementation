@@ -18,7 +18,6 @@ export default function TaskCard({
   onEdit, 
   onContextMenu,
   compact = false,
-  variant = 'default',
   style = {} 
 }: TaskCardProps) {
   const { members } = useTeamStore();

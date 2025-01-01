@@ -1,6 +1,5 @@
 import { Task } from '../store/taskStore';
-import { format, isWithinInterval, parseISO, isValid } from 'date-fns';
-import { validateTaskTime } from './calendarTaskSync';
+import { isWithinInterval, parseISO, isValid } from 'date-fns';
 
 export function filterTasksForDateRange(
   tasks: Task[],

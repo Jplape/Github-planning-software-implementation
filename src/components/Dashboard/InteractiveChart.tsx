@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Task } from '../../store/taskStore';
 import { format, startOfWeek, addDays } from 'date-fns';
@@ -10,10 +10,9 @@ interface InteractiveChartProps {
 }
 
 export default function InteractiveChart({ tasks, onBarClick }: InteractiveChartProps) {
-  const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
-  const generateWeekData = () => {
+  const generateWeekData = useMemo(() => {
     const currentDate = new Date();
     const weekStart = startOfWeek(currentDate, { locale: fr });
     
@@ -31,12 +30,17 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
         unassigned: dayTasks.filter(task => !task.technicianId).length,
       };
     });
-  };
+  }, [tasks]);
+  const data = generateWeekData;
 
-  const data = generateWeekData();
+  interface TooltipProps {
+    active?: boolean;
+    payload?: { value: number; dataKey: string; payload: { date: string } }[];
+    label?: string;
+  }
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
+  const CustomTooltip = ({ active, payload = [], label }: TooltipProps) => {
+    if (active && payload.length > 0) {
       const total = payload.reduce((sum: number, entry: any) => sum + entry.value, 0);
       return (
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
@@ -72,31 +76,41 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
   };
 
   const handleLegendClick = (entry: any) => {
-    setSelectedStatus(selectedStatus === entry.dataKey ? null : entry.dataKey);
+    setSelectedStatus((prevStatus) => (prevStatus === entry.dataKey ? null : entry.dataKey));
   };
 
-  const CustomLegend = ({ payload }: any) => (
-    <div className="flex justify-center space-x-4 mt-4">
-      {payload.map((entry: any, index: number) => (
-        <button
-          key={index}
-          onClick={() => handleLegendClick(entry)}
-          className={`
-            px-3 py-1 rounded-full text-sm transition-colors
-            ${selectedStatus === entry.dataKey ? 'ring-2 ring-offset-2' : ''}
-            ${entry.dataKey === 'completed' ? 'bg-green-100 text-green-800 ring-green-400' :
-              entry.dataKey === 'inProgress' ? 'bg-blue-100 text-blue-800 ring-blue-400' :
-              entry.dataKey === 'pending' ? 'bg-gray-100 text-gray-800 ring-gray-400' :
-              'bg-yellow-100 text-yellow-800 ring-yellow-400'}
-          `}
-        >
-          {entry.dataKey === 'completed' ? 'Terminées' :
-           entry.dataKey === 'inProgress' ? 'En cours' :
-           entry.dataKey === 'pending' ? 'En attente' : 'Non assignées'}
-        </button>
-      ))}
-    </div>
-  );
+  interface LegendProps {
+    payload?: { dataKey: string }[];
+  }
+
+  const CustomLegend = ({ payload }: LegendProps) => {
+    if (!payload || payload.length === 0) {
+      return null; // Retourne null si payload est undefined ou vide
+    }
+  
+    return (
+      <div className="flex justify-center space-x-4 mt-4">
+        {payload.map((entry: any, index: number) => (
+          <button
+            key={index}
+            onClick={() => handleLegendClick(entry)}
+            className={`
+              px-3 py-1 rounded-full text-sm transition-colors
+              ${selectedStatus === entry.dataKey ? 'ring-2 ring-offset-2' : ''}
+              ${entry.dataKey === 'completed' ? 'bg-green-100 text-green-800 ring-green-400' :
+                entry.dataKey === 'inProgress' ? 'bg-blue-100 text-blue-800 ring-blue-400' :
+                entry.dataKey === 'pending' ? 'bg-gray-100 text-gray-800 ring-gray-400' :
+                'bg-yellow-100 text-yellow-400 ring-yellow-400'}
+            `}
+          >
+            {entry.dataKey === 'completed' ? 'Terminées' :
+             entry.dataKey === 'inProgress' ? 'En cours' :
+             entry.dataKey === 'pending' ? 'En attente' : 'Non assignées'}
+          </button>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -111,21 +125,15 @@ export default function InteractiveChart({ tasks, onBarClick }: InteractiveChart
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
-            onMouseMove={(state) => {
-              if (state.activeTooltipIndex !== undefined) {
-                setHoveredBar(data[state.activeTooltipIndex].date);
-              }
-            }}
-            onMouseLeave={() => setHoveredBar(null)}
             onClick={(state) => {
-              if (state.activeTooltipIndex !== undefined) {
+              if (state?.activeTooltipIndex !== undefined) {
                 onBarClick(data[state.activeTooltipIndex].date, selectedStatus || undefined);
               }
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
+            <XAxis dataKey="name" aria-label="Day of the week" />
+            <YAxis aria-label="Number of tasks" />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
             <Bar

@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Clock, CheckCircle, AlertTriangle, Calendar } from 'lucide-react';
 import { Task } from '../../store/taskStore';
-import { format, isToday, isPast, isFuture } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { isToday, isPast, isFuture } from 'date-fns';
 
 interface ClientStatisticsProps {
   clientId: number;

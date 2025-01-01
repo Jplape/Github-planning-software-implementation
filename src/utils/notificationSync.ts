@@ -1,6 +1,5 @@
 import { Task } from '../store/taskStore';
-import { format, isToday, isPast, addHours } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { isToday, isPast, addHours } from 'date-fns';
 
 export interface Notification {
   id: string;

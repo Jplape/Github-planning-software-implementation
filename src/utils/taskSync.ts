@@ -14,18 +14,6 @@ export function syncTaskStatus(taskId: string, newStatus: Task['status']) {
   syncWorkload();
 }
 
-// Synchronize task assignment
-export function syncTaskAssignment(taskId: string, technicianId: string | null) {
-  const { updateTask } = useTaskStore.getState();
-  const { syncWorkload } = useTeamStore.getState();
-
-  // Update task assignment
-  updateTask(taskId, { technicianId });
-
-  // Sync team workload
-  syncWorkload();
-}
-
 // Validate task conflicts
 export function validateTaskConflicts(task: Partial<Task>, technicianId: string): boolean {
   const { tasks } = useTaskStore.getState();

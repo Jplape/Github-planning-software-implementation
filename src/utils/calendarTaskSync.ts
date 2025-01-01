@@ -1,5 +1,5 @@
 import { Task } from '../store/taskStore';
-import { format, parseISO, isValid } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 
 export function validateTaskTime(task: Task): boolean {
   if (!task.startTime || !task.date) return false;

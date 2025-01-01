@@ -26,10 +26,6 @@ export default function ClientCard({ client }: ClientCardProps) {
   const { tasks } = useTaskStore();
   const clientTasks = tasks.filter(task => task.client === client.name);
 
-  const pendingTasks = clientTasks.filter(task => task.status === 'pending');
-  const inProgressTasks = clientTasks.filter(task => task.status === 'in_progress');
-  const completedTasks = clientTasks.filter(task => task.status === 'completed');
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':

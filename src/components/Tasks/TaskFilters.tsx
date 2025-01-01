@@ -6,10 +6,9 @@ import { useTeamStore } from '../../store/teamStore';
 interface TaskFiltersProps {
   onFilterChange: (filters: any) => void;
   clients: string[];
-  equipments: string[];
 }
 
-export default function TaskFilters({ onFilterChange, clients, equipments }: TaskFiltersProps) {
+export default function TaskFilters({ onFilterChange, clients }: TaskFiltersProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { members } = useTeamStore();
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -165,13 +164,7 @@ export default function TaskFilters({ onFilterChange, clients, equipments }: Tas
             onChange={(e) => setFilters({ ...filters, equipment: e.target.value })}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="all">Tous les équipements</option>
-            {equipments.map((equipment) => (
-              <option key={equipment} value={equipment}>
-                {equipment}
-              </option>
-            ))}
-          </select>
+        </select>
         </div>
 
         <div>

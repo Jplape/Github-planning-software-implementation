@@ -14,23 +14,22 @@ import CalendarFilters from '../components/Calendar/CalendarFilters';
 import TaskContextMenu from '../components/Calendar/TaskContextMenu';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
+import { Task } from '../store/taskStore';
 
 export default function Calendar() {
   const { moveTask } = useTaskStore();
   const { filters, setFilters } = useCalendarStore();
-  const { tasks, groupedTasks } = useCalendarSync();
+  const { tasks } = useCalendarSync();
   const {
     currentDate,
     view,
     setView,
-    navigate,
-    getVisibleRange
-  } = useCalendarNavigation();
+    navigate  } = useCalendarNavigation();
   
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>();
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [, setActiveId] = useState<string | null>(null);
   const [draggedOverDate, setDraggedOverDate] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     task: Task;
