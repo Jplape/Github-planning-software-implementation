@@ -1,4 +1,4 @@
-import { Clock, Users, Wrench, Building } from 'lucide-react';
+import { Clock, Users, Wrench, Building, CheckCircle } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useTeamStore } from '../store/teamStore';
 import StatCard from '../components/Dashboard/StatCard';
@@ -21,15 +21,27 @@ export default function Dashboard() {
       value: stats.activeInterventions.toString(), 
       icon: Clock, 
       color: 'bg-blue-500',
-      description: 'Tâches actuellement en cours d\'exécution',
+      description: 'Progression des interventions en cours',
       trend: {
-        value: ((stats.activeInterventions / stats.totalTasks) * 100).toFixed(1),
+        value: ((stats.activeInterventions / (stats.activeInterventions + stats.completedTasks)) * 100).toFixed(1),
         label: 'du total des interventions'
       },
       link: '/tasks?status=in_progress'
     },
     { 
-      name: 'Techniciens disponibles', 
+      name: 'Taches non assignées de la semaine', 
+      value: stats.unassignedTasks.toString(), 
+      icon: Building, 
+      color: 'bg-yellow-500',
+      description: 'Techniciens disponibles cette semaine',
+      trend: {
+        value: ((stats.unassignedTasks / stats.totalTasks) * 100).toFixed(1),
+        label: 'du total des tâches'
+      },
+      link: '/tasks?filter=unassigned'
+    },
+    { 
+      name: 'Techniciens disponibles ce jour',
       value: `${stats.availableTechnicians}/${stats.totalMembers}`, 
       icon: Users, 
       color: 'bg-green-500',
@@ -41,28 +53,40 @@ export default function Dashboard() {
       link: '/teams?status=available'
     },
     { 
-      name: 'Tâches du jour', 
-      value: `${stats.todayCompletedTasks}/${stats.todayTasks}`, 
+      name: 'Interventions cette semaine', 
+      value: stats.totalWeeklyInterventions.toString(), 
       icon: Wrench, 
       color: 'bg-purple-500',
-      description: 'Progression des interventions du jour',
+      description: `Interventions prévues cette semaine (${stats.completedWeeklyInterventions} complétées)`,
       trend: {
-        value: stats.todayTasks > 0 ? ((stats.todayCompletedTasks / stats.todayTasks) * 100).toFixed(1) : '0',
+        value: stats.weeklyCompletionPercentage,
         label: 'de complétion'
       },
-      link: '/calendar'
+      link: '/tasks?filter=this_week'
     },
-    { 
-      name: 'Tâches non assignées', 
-      value: stats.unassignedTasks.toString(), 
-      icon: Building, 
-      color: 'bg-yellow-500',
-      description: 'Tâches en attente d\'assignation',
+    {
+      name: 'Tâches complétées cette semaine',
+      value: stats.completedWeeklyInterventions.toString(),
+      icon: CheckCircle,
+      color: 'bg-teal-500',
+      description: `Tâches terminées cette semaine avec techniciens assignés`,
       trend: {
-        value: ((stats.unassignedTasks / stats.totalTasks) * 100).toFixed(1),
-        label: 'du total des tâches'
+        value: stats.weeklyCompletionPercentage,
+        label: 'de complétion'
       },
-      link: '/tasks?filter=unassigned'
+      link: '/tasks?status=completed'
+    },
+    {
+      name: 'Tâches complétées aujourd\'hui',
+      value: stats.todayCompletedTasks.toString(),
+      icon: CheckCircle,
+      color: 'bg-orange-500',
+      description: `Tâches terminées aujourd'hui avec techniciens assignés`,
+      trend: {
+        value: ((stats.todayCompletedTasks / stats.todayTasks) * 100).toFixed(1),
+        label: 'de complétion'
+      },
+      link: '/tasks?status=completed&date=today'
     }
   ];
 

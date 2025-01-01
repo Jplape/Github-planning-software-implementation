@@ -79,6 +79,30 @@ export default function NotificationCenter({ tasks }: NotificationCenterProps) {
       });
     }
 
+    // Tâches terminées cette semaine
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const completedThisWeek = tasks.filter(task => {
+      const taskDate = new Date(task.date);
+      return task.status === 'completed' &&
+             taskDate >= startOfWeek &&
+             taskDate <= now;
+    });
+
+    if (completedThisWeek.length > 0) {
+      notifications.push({
+        id: 'completed-week',
+        type: 'success',
+        title: 'Tâches terminées cette semaine',
+        message: `${completedThisWeek.length} tâche(s) complétée(s) cette semaine`,
+        timestamp: now,
+        link: '/tasks?filter=completed&date=week',
+        tasks: completedThisWeek
+      });
+    }
+
     // Tâches à venir
     const upcomingTasks = tasks.filter(task => {
       const taskDateTime = new Date(`${task.date}T${task.startTime}`);

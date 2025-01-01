@@ -5,10 +5,34 @@ import { useCalendarStore } from './calendarStore';
 import { Task } from '../types/task';
 import { generateDemoTasks } from '../data/demoTasks';
 
+interface Stats {
+  activeInterventions: number;
+  completedTasks: number;
+  pendingTasks: number;
+  unassignedTasks: number;
+  highPriorityTasks: number;
+  todayTasks: number;
+  todayCompletedTasks: number;
+  activeTechnicians: number;
+  availableTechnicians: number;
+  totalTasks: number;
+  totalMembers: number;
+  totalWeeklyInterventions: number;
+  completedWeeklyInterventions: number;
+  weeklyCompletionPercentage: string;
+}
+
 interface TaskState {
   tasks: Task[];
   lastTaskId: number;
   lastUpdate: number;
+  stats: Stats;
+  filters: {
+    dateRange?: {
+      startDate: Date;
+      endDate: Date;
+    };
+  };
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -16,6 +40,8 @@ interface TaskState {
   getTasksByDate: (date: string) => Task[];
   getTasksByDateRange: (startDate: Date, endDate: Date) => Task[];
   getTechnicianTasks: (technicianId: string, date: string) => Task[];
+  clearFilters: () => void;
+  setDateRangeFilter: (range: { startDate: Date; endDate: Date }) => void;
 }
 
 export const useTaskStore = create<TaskState>()(
@@ -24,6 +50,23 @@ export const useTaskStore = create<TaskState>()(
       tasks: generateDemoTasks(),
       lastTaskId: 0,
       lastUpdate: Date.now(),
+      stats: {
+        activeInterventions: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        unassignedTasks: 0,
+        highPriorityTasks: 0,
+        todayTasks: 0,
+        todayCompletedTasks: 0,
+        activeTechnicians: 0,
+        availableTechnicians: 0,
+        totalTasks: 0,
+        totalMembers: 0,
+        totalWeeklyInterventions: 0,
+        completedWeeklyInterventions: 0,
+        weeklyCompletionPercentage: '0.0'
+      },
+      filters: {},
 
       addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
         const now = new Date().toISOString();
@@ -117,6 +160,21 @@ export const useTaskStore = create<TaskState>()(
         return get().tasks.filter(
           task => task.technicianId === technicianId && task.date === date
         );
+      },
+      
+      clearFilters: () => {
+        set({
+          filters: {}
+        });
+      },
+      
+      setDateRangeFilter: (range: { startDate: Date; endDate: Date }) => {
+        set((state) => ({
+          filters: {
+            ...state.filters,
+            dateRange: range
+          }
+        }));
       },
     }),
     {

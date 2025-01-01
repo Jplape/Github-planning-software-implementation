@@ -19,15 +19,19 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [sortField, setSortField] = useState<SortField>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [filters, setFilters] = useState({
+  // Initialize filters from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialFilters = {
     status: 'all',
     priority: 'all',
     technician: 'all',
     client: 'all',
     equipment: 'all',
     assignment: 'all',
-    date: 'all'
-  });
+    date: urlParams.get('filter') === 'this_week' ? 'week' : 'all'
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
 
   // Enable task synchronization
   useTaskSync();

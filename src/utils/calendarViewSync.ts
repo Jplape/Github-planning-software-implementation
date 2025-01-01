@@ -17,6 +17,10 @@ export function filterTasksForDateRange(
       const isInRange = isWithinInterval(taskDate, { start: startDate, end: endDate });
       if (!isInRange) return false;
 
+      // Exclude weekends (Saturday = 6, Sunday = 0)
+      const dayOfWeek = taskDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+
       // Apply technician filter
       if (filters.technician !== 'all' && task.technicianId !== filters.technician) {
         return false;
@@ -52,8 +56,7 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
       const timeCompare = a.startTime.localeCompare(b.startTime);
       if (timeCompare !== 0) return timeCompare;
       
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
+      return (b.priority || 0) - (a.priority || 0);
     });
   });
 

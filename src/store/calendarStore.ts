@@ -5,6 +5,18 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay 
 
 type CalendarView = 'month' | 'week' | 'day';
 
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  extendedProps: {
+    status: Task['status'];
+    priority: Task['priority'];
+    technicianId: string | null;
+  };
+}
+
 interface CalendarState {
   currentDate: Date;
   view: CalendarView;
@@ -15,6 +27,7 @@ interface CalendarState {
     client: string;
   };
   lastSync: number;
+  events: CalendarEvent[];
   setCurrentDate: (date: Date) => void;
   setView: (view: CalendarView) => void;
   setSelectedTask: (task: Task | null) => void;
@@ -36,6 +49,7 @@ export const useCalendarStore = create<CalendarState>()(
         client: 'all'
       },
       lastSync: Date.now(),
+      events: [],
 
       setCurrentDate: (date) => set({ currentDate: date }),
       setView: (view) => set({ view }),

@@ -3,6 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Task } from '../../store/taskStore';
 import { format, startOfWeek, addDays, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTaskStore } from '../../store/taskStore';
+import { useNavigate } from 'react-router-dom';
 
 // Couleurs pour les différents statuts
 const COLORS = {
@@ -49,10 +51,10 @@ interface InteractiveChartProps {
  */
 export default function InteractiveChart({ tasks = [], onBarClick }: InteractiveChartProps) {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const taskStore = useTaskStore();
 
   const { data, weekRange } = useMemo(() => {
     setIsLoading(true);
@@ -67,7 +69,10 @@ export default function InteractiveChart({ tasks = [], onBarClick }: Interactive
       const data = Array.from({ length: 7 }, (_, index) => {
         const date = addDays(weekStart, index);
         const dateStr = format(date, 'yyyy-MM-dd');
-        const dayTasks = tasks.filter(task => task.date === dateStr);
+        const dayTasks = tasks.filter(task => {
+          const taskDate = new Date(task.date);
+          return taskDate >= date && taskDate < addDays(date, 1);
+        });
         
         const counts = dayTasks.reduce((acc, task) => {
           acc[task.status] = (acc[task.status] || 0) + 1;
@@ -192,7 +197,27 @@ export default function InteractiveChart({ tasks = [], onBarClick }: Interactive
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-medium text-gray-900">Suivi hebdomadaire</h3>
-          <p className="text-sm text-gray-500 mt-1">{weekRange}</p>
+          <p 
+            className="text-sm text-gray-500 mt-1 cursor-pointer hover:text-indigo-600 transition-colors duration-200"
+            onClick={() => {
+              // Clear existing filters
+              taskStore.clearFilters();
+              
+              // Apply week filter
+              const currentDate = new Date();
+              const weekStart = startOfWeek(currentDate, { locale: fr });
+              const weekEnd = addDays(weekStart, 6);
+              taskStore.setDateRangeFilter({
+                startDate: weekStart,
+                endDate: weekEnd
+              });
+              
+              // Navigate to Tasks page with reset filters
+              navigate('/tasks?status=all&date=week');
+            }}
+          >
+            {weekRange}
+          </p>
         </div>
         <div className="text-sm text-gray-500">
           Cliquez sur les barres ou la légende pour filtrer
