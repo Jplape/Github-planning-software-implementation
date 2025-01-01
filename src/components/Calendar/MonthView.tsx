@@ -6,6 +6,7 @@ import TaskCard from './TaskCard';
 
 interface MonthViewProps {
   currentDate: Date;
+  onDateSelect: (date: Date) => void;
   tasks: Task[];
   onNewTask: (date: string) => void;
   onEditTask: (task: Task) => void;
@@ -73,13 +74,13 @@ export default function MonthView({
               isOver={draggedOverDate === day.dateStr}
             >
               <div
-                className={`min-h-[120px] p-2 border-r border-b last:border-r-0 ${
-                  !day.isCurrentMonth ? 'bg-gray-50' : 'bg-white'
+                className={`min-h-[150px] p-3 border-r border-b last:border-r-0 ${
+                  !day.isCurrentMonth ? 'bg-gray-100' : 'bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-sm font-medium ${
-                    !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
+                    !day.isCurrentMonth ? 'text-gray-500' : 'text-gray-900'
                   }`}>
                     {format(day.date, 'd')}
                   </span>

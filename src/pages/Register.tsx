@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Wrench } from 'lucide-react';
-import { auth } from '../lib/firebase';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -13,7 +12,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      // TODO: Implémenter la logique d'inscription avec Supabase
       navigate('/');
     } catch (err) {
       setError('Une erreur est survenue lors de l\'inscription');

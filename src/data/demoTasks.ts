@@ -74,7 +74,8 @@ export function generateDemoTasks(): Task[] {
         'low';
 
       tasks.push({
-        id: `task-${taskId++}`,
+        number: taskId,
+        id: `${taskId++}`,
         title: `${maintenanceType} - ${equipment.name}`,
         client,
         date,
@@ -87,6 +88,7 @@ export function generateDemoTasks(): Task[] {
         brand: equipment.brand,
         model: equipment.model,
         serialNumber: `${equipment.serial}-${(taskId).toString().padStart(3, '0')}`,
+        reportNumber: `RI-${taskId}`,
         description: `${maintenanceType} programmée pour ${equipment.name} ${equipment.model}`,
         createdAt: subDays(new Date(), 30).toISOString(),
         updatedAt: new Date().toISOString()

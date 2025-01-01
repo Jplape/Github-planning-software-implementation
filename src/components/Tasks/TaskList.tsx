@@ -65,6 +65,9 @@ export default function TaskList({ tasks, onEditTask }: TaskListProps) {
               Technicien
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Priorité
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               État
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -82,6 +85,13 @@ export default function TaskList({ tasks, onEditTask }: TaskListProps) {
                 className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => onEditTask(task)}
               >
+                <td className="px-6 py-4">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityStyle(task.priority)}`}>
+                    {task.priority === 'high' ? 'Haute' :
+                     task.priority === 'medium' ? 'Moyenne' : 'Basse'}
+                  </span>
+                </td>
+
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-gray-400" />
