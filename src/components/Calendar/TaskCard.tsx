@@ -23,8 +23,8 @@ export default function TaskCard({
 }: TaskCardProps) {
   const { members } = useTeamStore();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const assignedTechnician = task.technicianId 
-    ? members.find(m => m.id === Number(task.technicianId))
+  const assignedTechnician = task.technicianId
+    ? members.find(m => m.id === task.technicianId)
     : null;
 
   const {
@@ -34,7 +34,7 @@ export default function TaskCard({
     transform,
     isDragging,
   } = useDraggable({
-    id: task.id,
+    id: String(task.id),
     data: {
       type: 'task',
       task
@@ -46,9 +46,9 @@ export default function TaskCard({
     opacity: isDragging ? 0.5 : undefined,
   } : undefined;
 
-  const getPriorityStyles = (priority: string) => {
+  const getPriorityStyles = (priority: number) => {
     switch (priority) {
-      case 'high':
+      case 1: // high
         return {
           bg: 'bg-red-50',
           border: 'border-red-200',
@@ -56,7 +56,7 @@ export default function TaskCard({
           hover: 'hover:bg-red-100',
           dot: 'bg-red-500'
         };
-      case 'medium':
+      case 2: // medium
         return {
           bg: 'bg-orange-50',
           border: 'border-orange-200',
@@ -139,8 +139,8 @@ export default function TaskCard({
       handleContextMenuOpen(e);
       }}
       className={`
-        group relative rounded-lg border cursor-move transition-all duration-200
-        ${priorityStyles.bg} ${priorityStyles.border} ${priorityStyles.hover}
+        group relative rounded-lg cursor-move transition-all duration-200
+        border-l-6 border-r-6 ${priorityStyles.border} ${priorityStyles.bg} ${priorityStyles.hover}
         ${isDragging ? 'ring-2 ring-indigo-500 shadow-lg z-50' : 'hover:shadow-md'}
         ${compact ? 'p-2' : 'p-3'}
         h-full overflow-hidden flex flex-col
@@ -151,7 +151,7 @@ export default function TaskCard({
           {task.number} - 
           {task.title}
         </span>
-        {task.priority === 'high' && !compact && (
+        {task.priority === 1 && !compact && (
           <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 ml-1" />
         )}
       <Menu

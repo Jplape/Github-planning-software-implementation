@@ -3,7 +3,7 @@ import { calculateTeamWorkload } from '../utils/teamTaskSync';
 import { useTaskStore } from './taskStore';
 
 export interface TeamMember {
-  id: number;
+  id: string;
   name: string;
   role: string;
   email: string;
@@ -20,14 +20,14 @@ export interface TeamMember {
 interface TeamState {
   members: TeamMember[];
   addMember: (member: Omit<TeamMember, 'id' | 'assignments' | 'completedTasks' | 'maxConcurrentTasks'>) => void;
-  updateMember: (id: number, updates: Partial<TeamMember>) => void;
-  deleteMember: (id: number) => void;
+  updateMember: (id: string, updates: Partial<TeamMember>) => void;
+  deleteMember: (id: string) => void;
   syncWorkload: () => void;
 }
 
 const initialMembers: TeamMember[] = [
   {
-    id: 1,
+    id: '1',
     name: 'Thomas Martin',
     role: 'Technicien Senior',
     email: 'thomas.martin@biomedical.com',
@@ -39,7 +39,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 5
   },
   {
-    id: 2,
+    id: '2',
     name: 'Sophie Bernard',
     role: 'Technicienne Senior',
     email: 'sophie.bernard@biomedical.com',
@@ -51,7 +51,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 5
   },
   {
-    id: 3,
+    id: '3',
     name: 'Marc Dubois',
     role: 'Technicien',
     email: 'marc.dubois@biomedical.com',
@@ -63,7 +63,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 4
   },
   {
-    id: 4,
+    id: '4',
     name: 'Julie Lambert',
     role: 'Technicienne',
     email: 'julie.lambert@biomedical.com',
@@ -75,7 +75,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 4
   },
   {
-    id: 5,
+    id: '5',
     name: 'Pierre Moreau',
     role: 'Technicien Senior',
     email: 'pierre.moreau@biomedical.com',
@@ -87,7 +87,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 5
   },
   {
-    id: 6,
+    id: '6',
     name: 'Emma Petit',
     role: 'Technicienne Junior',
     email: 'emma.petit@biomedical.com',
@@ -99,7 +99,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 3
   },
   {
-    id: 7,
+    id: '7',
     name: 'Lucas Roux',
     role: 'Technicien Junior',
     email: 'lucas.roux@biomedical.com',
@@ -111,7 +111,7 @@ const initialMembers: TeamMember[] = [
     maxConcurrentTasks: 3
   },
   {
-    id: 8,
+    id: '8',
     name: 'Sarah Leroy',
     role: 'Technicienne',
     email: 'sarah.leroy@biomedical.com',
@@ -132,7 +132,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       ...state.members,
       {
         ...member,
-        id: Math.max(0, ...state.members.map((m) => m.id)) + 1,
+        id: (Math.max(0, ...state.members.map(m => Number(m.id))) + 1).toString(),
         assignments: 0,
         completedTasks: 0,
         maxConcurrentTasks: member.role.includes('Senior') ? 5 : 
