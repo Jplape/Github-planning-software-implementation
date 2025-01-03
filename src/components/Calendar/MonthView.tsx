@@ -65,7 +65,7 @@ export default function MonthView({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 h-[calc(100vh-16rem)]">
+      <div className="grid grid-cols-7" style={{ minHeight: '600px' }}>
         {weeks.map((week) => (
           week.map((day) => (
             <DroppableDay
