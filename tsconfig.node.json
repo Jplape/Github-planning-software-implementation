@@ -1,10 +1,14 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true
+    "allowJs": true,
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false
   },
-  "include": ["vite.config.ts"]
+  "include": ["src/data/*.ts"]
 }

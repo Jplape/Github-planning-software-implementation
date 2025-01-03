@@ -140,10 +140,11 @@ export default function TaskCard({
       }}
       className={`
         group relative rounded-lg cursor-move transition-all duration-200
-        border-l-6 border-r-6 ${priorityStyles.border} ${priorityStyles.bg} ${priorityStyles.hover}
+        border-l-4 border-r-4 ${priorityStyles.border} ${priorityStyles.bg} ${priorityStyles.hover}
         ${isDragging ? 'ring-2 ring-indigo-500 shadow-lg z-50' : 'hover:shadow-md'}
         ${compact ? 'p-2' : 'p-3'}
         h-full overflow-hidden flex flex-col
+        ${getStatusBadgeStyle(task.status)}
       `}
     >
       <div className="flex items-start justify-between mb-1">

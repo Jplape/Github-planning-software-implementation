@@ -12,7 +12,6 @@ import InterventionReports from './pages/InterventionReports';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-import { MockAuthProvider } from './components/MockAuthProvider';
 import { useAuthStore } from './store/authStore';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -31,7 +30,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <MockAuthProvider>
           <BrowserRouter>
             <Toaster
               position="top-right"
@@ -73,7 +71,6 @@ export default function App() {
               </Route>
             </Routes>
           </BrowserRouter>
-        </MockAuthProvider>
       </ErrorBoundary>
     </QueryClientProvider>
   );

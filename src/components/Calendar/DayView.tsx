@@ -1,7 +1,9 @@
+import React from 'react';
 import { format, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Plus, Clock, User, MapPin, AlertCircle } from 'lucide-react';
 import { Task } from '../../store/taskStore';
+import { getPriorityStyles } from '../../utils/taskUtils';
 import { useTeamStore } from '../../store/teamStore';
 import { DroppableDay } from './DroppableDay';
 import { validateTaskTime, getTaskPosition, sortTasksByTime } from '../../utils/calendarTaskSync';
@@ -15,10 +17,6 @@ interface DayViewProps {
   draggedOverDate: string | null;
 }
 
-const HOUR_HEIGHT = 80;
-const START_HOUR = 7;
-const END_HOUR = 18;
-
 export default function DayView({
   currentDate,
   tasks,
@@ -27,10 +25,33 @@ export default function DayView({
   onContextMenu,
   draggedOverDate
 }: DayViewProps) {
+  const [hourHeight, setHourHeight] = React.useState(80);
+  const START_HOUR = 7;
+  const END_HOUR = 18;
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      const newHeight = window.innerHeight < 800 ? 60 : 80;
+      setHourHeight(newHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const { members } = useTeamStore();
   const dateStr = format(currentDate, 'yyyy-MM-dd');
-  const validTasks = tasks.filter(validateTaskTime);
-  const sortedTasks = sortTasksByTime(validTasks);
+  const sortedTasks = React.useMemo(() => {
+    const valid = tasks.filter(t => {
+      try {
+        return validateTaskTime(t);
+      } catch (error) {
+        console.error('Invalid task time:', error);
+        return false;
+      }
+    });
+    return sortTasksByTime(valid);
+  }, [tasks]);
 
   const hours = Array.from(
     { length: END_HOUR - START_HOUR + 1 },
@@ -55,7 +76,7 @@ export default function DayView({
               <div
                 key={hour}
                 className="relative"
-                style={{ height: HOUR_HEIGHT }}
+                style={{ height: hourHeight }}
               >
                 <div className="absolute right-2 top-0 -translate-y-1/2">
                   <span className="text-sm font-medium text-gray-500">
@@ -76,7 +97,7 @@ export default function DayView({
                   <div
                     key={hour}
                     className="border-t border-gray-100"
-                    style={{ height: HOUR_HEIGHT }}
+                    style={{ height: hourHeight }}
                   >
                     <div className="h-1/2 border-t border-gray-50 border-dashed" />
                   </div>
@@ -85,9 +106,9 @@ export default function DayView({
 
               <div className="absolute inset-0">
                 {sortedTasks.map(task => {
-                  const position = getTaskPosition(task, HOUR_HEIGHT, START_HOUR);
+                  const position = getTaskPosition(task, hourHeight, START_HOUR);
                   const technician = task.technicianId 
-                    ? members.find(m => m.id === Number(task.technicianId))
+                    ? members.find(m => m.id === task.technicianId)
                     : null;
 
                   return (
@@ -95,25 +116,23 @@ export default function DayView({
                       key={task.id}
                       className="absolute left-1 right-1"
                       style={{ 
-                        top: `${position.top}px`, 
-                        height: `${position.height}px` 
+                        top: `${position?.top ?? 0}px`, 
+                        height: `${position?.height ?? 0}px`
                       }}
                       onClick={() => onEditTask(task)}
                       onContextMenu={(e) => onContextMenu(e, task)}
                     >
                       <div className={`
-                        h-full rounded-lg border p-2 cursor-pointer
-                        ${task.priority === 'high' 
-                          ? 'bg-red-50 border-red-200 hover:bg-red-100' 
-                          : task.priority === 'medium'
-                          ? 'bg-orange-50 border-orange-200 hover:bg-orange-100'
-                          : 'bg-green-50 border-green-200 hover:bg-green-100'}
+                        h-full rounded-lg border-l-4 border-r-4 p-2 cursor-pointer
+                        ${getPriorityStyles(task.priority).bg}
+                        border-${getPriorityStyles(task.priority).border.split('-')[1]}-500
+                        ${getPriorityStyles(task.priority).hover}
                       `}>
                         <div className="flex items-start justify-between mb-1">
                           <span className="text-sm font-medium truncate">
                             {task.title}
                           </span>
-                          {task.priority === 'high' && (
+                          {task.priority === 1 && (
                             <AlertCircle className="h-4 w-4 text-red-500" />
                           )}
                         </div>
@@ -144,7 +163,7 @@ export default function DayView({
                 <div
                   className="absolute left-0 right-0 flex items-center pointer-events-none z-20"
                   style={{
-                    top: `${((new Date().getHours() - START_HOUR) * 60 + new Date().getMinutes()) * (HOUR_HEIGHT / 60)}px`,
+                    top: `${((new Date().getHours() - START_HOUR) * 60 + new Date().getMinutes()) * (hourHeight / 60)}px`,
                   }}
                 >
                   <div className="w-2 h-2 rounded-full bg-red-500" />
