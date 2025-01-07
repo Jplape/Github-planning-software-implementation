@@ -1,7 +1,7 @@
 import { Check, Clock, AlertCircle } from 'lucide-react';
 
 interface StatusBadgeProps {
-  status: 'completed' | 'pending' | 'in_progress';
+  status: 'completed' | 'pending' | 'in_progress' | 'pending-sync';
   size?: 'sm' | 'md' | 'lg';
   interactive?: boolean;
   onClick?: () => void;

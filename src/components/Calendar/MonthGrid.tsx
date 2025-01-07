@@ -1,12 +1,13 @@
 import { Task } from '../../store/taskStore';
 import MonthDay from './MonthDay';
+import { useTaskStore } from '../../store/taskStore';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface MonthGridProps {
   days: Array<{
     date: Date;
     dateStr: string;
     isCurrentMonth: boolean;
-    tasks: Task[];
   }>;
   weekDays: string[];
   onNewTask: (date: string) => void;
@@ -23,6 +24,15 @@ export default function MonthGrid({
   onContextMenu,
   draggedOverDate
 }: MonthGridProps) {
+  const tasks = useTaskStore((state) =>
+    state.getTasksByDateRange(startOfMonth(new Date()), endOfMonth(new Date()))
+  );
+
+  const daysWithTasks = days.map(day => ({
+    ...day,
+    tasks: tasks.filter(task => task.date === day.dateStr)
+  }));
+
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       {/* Header with weekday names */}
@@ -39,7 +49,7 @@ export default function MonthGrid({
 
       {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-px bg-gray-200">
-        {days.map((day) => (
+        {daysWithTasks.map((day) => (
           <MonthDay
             key={day.dateStr}
             day={day}

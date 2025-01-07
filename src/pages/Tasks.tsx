@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Plus, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
+import { useCalendarStore } from '../store/calendarStore';
 import TaskFilters from '../components/Tasks/TaskFilters';
 import NewTaskModal from '../components/Calendar/NewTaskModal';
 import { filterTasks } from '../utils/taskFilters';
@@ -34,7 +35,8 @@ export default function Tasks() {
   const [filters, setFilters] = useState(initialFilters);
 
   // Enable task synchronization
-  useTaskSync();
+  const { refreshCalendar } = useCalendarStore();
+  useTaskSync(() => refreshCalendar());
 
   // Get unique clients and equipments for filters
   const clients = Array.from(new Set(tasks.map(task => task.client)));
@@ -59,7 +61,9 @@ export default function Tasks() {
           comparison = a.title.localeCompare(b.title);
           break;
         case 'date':
-          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          const dateA = a.date && !isNaN(new Date(a.date).getTime()) ? new Date(a.date).getTime() : 0;
+          const dateB = b.date && !isNaN(new Date(b.date).getTime()) ? new Date(b.date).getTime() : 0;
+          comparison = dateA - dateB;
           break;
         case 'status':
           comparison = a.status.localeCompare(b.status);
@@ -208,7 +212,11 @@ export default function Tasks() {
                     {task.title}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(new Date(task.date), 'dd MMMM yyyy', { locale: fr })}
+                    {task.date && !isNaN(new Date(task.date).getTime()) ? (
+                      format(new Date(task.date), 'dd MMMM yyyy', { locale: fr })
+                    ) : (
+                      <span className="text-gray-400">Date invalide</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${

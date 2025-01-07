@@ -15,7 +15,7 @@ export async function syncAllData() {
   // Sync task statuses
   tasks.forEach(task => {
     if (!validateTaskTime(task)) {
-      updateTask(task.id, { status: 'pending' });
+      updateTask(task.id, { status: 'pending-sync' });
     }
   });
 

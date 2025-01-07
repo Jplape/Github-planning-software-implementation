@@ -35,6 +35,7 @@ interface CalendarState {
   setFilters: (filters: { technician: string; client: string }) => void;
   updateLastSync: () => void;
   getVisibleDateRange: () => { start: Date; end: Date };
+  refreshCalendar: () => void;
 }
 
 export const useCalendarStore = create<CalendarState>()(
@@ -77,6 +78,10 @@ export const useCalendarStore = create<CalendarState>()(
               end: endOfMonth(currentDate)
             };
         }
+      },
+      refreshCalendar: () => {
+        // Force calendar refresh by updating lastSync timestamp
+        set({ lastSync: Date.now() });
       }
     }),
     {

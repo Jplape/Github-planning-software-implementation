@@ -7,8 +7,8 @@ export interface Task {
   startTime: string;
   duration: number;
   technicianId?: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: number;
+  status: 'pending' | 'in_progress' | 'completed' | 'pending-sync';
+  priority: 'haute' | 'moyenne' | 'basse';
   progress?: number;
   description?: string;
   equipment?: string;

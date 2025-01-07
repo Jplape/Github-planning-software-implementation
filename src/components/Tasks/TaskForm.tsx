@@ -45,7 +45,7 @@ const defaultFormData: FormData = {
   date: format(new Date(), 'yyyy-MM-dd'),
   startTime: '08:00',
   endTime: '09:00',
-  priority: 'medium',
+  priority: 'moyenne',
   technicianId: '',
   status: 'pending'
 };
@@ -299,9 +299,9 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
               onChange={(e) => setFormData({ ...formData, priority: e.target.value as Task['priority'] })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
-              <option value="low">Basse</option>
-              <option value="medium">Moyenne</option>
-              <option value="high">Haute</option>
+              <option value="basse">Basse</option>
+              <option value="moyenne">Moyenne</option>
+              <option value="haute">Haute</option>
             </select>
           </div>
 
@@ -313,6 +313,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="pending">En attente</option>
+              <option value="pending-sync">En attente de synchronisation</option>
               <option value="in_progress">En cours</option>
               <option value="completed">Terminée</option>
             </select>

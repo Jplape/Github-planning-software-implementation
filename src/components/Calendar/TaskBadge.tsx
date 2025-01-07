@@ -1,3 +1,4 @@
+import React from 'react';
 import { Clock, AlertCircle, User } from 'lucide-react';
 import { Task } from '../../store/taskStore';
 import { useTeamStore } from '../../store/teamStore';
@@ -9,27 +10,36 @@ interface TaskBadgeProps {
   compact?: boolean;
 }
 
-export default function TaskBadge({ task, onClick, onContextMenu, compact = false }: TaskBadgeProps) {
+export default React.memo(TaskBadgeComponent, (prevProps, nextProps) => {
+  // Only prevent re-render if priority hasn't changed
+  return prevProps.task.priority === nextProps.task.priority;
+});
+
+function TaskBadgeComponent({ task, onClick, onContextMenu, compact = false }: TaskBadgeProps) {
   const { members } = useTeamStore();
+
+  // Generate unique key based on priority to force re-render
+  const priorityKey = `${task.id}-${task.priority}`;
   const technician = task.technicianId 
-    ? members.find(m => m.id === Number(task.technicianId))
+    ? members.find(m => String(m.id) === task.technicianId)
     : null;
 
   const getPriorityStyle = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-50 border-red-200 hover:bg-red-100 text-red-700';
-      case 'medium':
-        return 'bg-orange-50 border-orange-200 hover:bg-orange-100 text-orange-700';
-      case 'low':
-        return 'bg-green-50 border-green-200 hover:bg-green-100 text-green-700';
+    switch (priority.toLowerCase()) {
+      case 'haute':
+        return 'bg-red-50 border-red-200 hover:bg-red-100 text-red-900';
+      case 'moyenne':
+        return 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-900';
+      case 'basse':
+        return 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-900';
       default:
-        return 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700';
+        return 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-900';
     }
   };
-
+  
   return (
     <div
+      key={priorityKey}
       onClick={onClick}
       onContextMenu={onContextMenu}
       className={`
@@ -42,8 +52,14 @@ export default function TaskBadge({ task, onClick, onContextMenu, compact = fals
         <span className="text-xs font-medium truncate flex-1">
           {task.title}
         </span>
-        {task.priority === 'high' && (
-          <AlertCircle className="h-3 w-3 flex-shrink-0 text-red-500" />
+        {task.priority === 'haute' && (
+          <AlertCircle className="h-3 w-3 flex-shrink-0 text-red-600" />
+        )}
+        {task.priority === 'moyenne' && (
+          <AlertCircle className="h-3 w-3 flex-shrink-0 text-amber-600" />
+        )}
+        {task.priority === 'basse' && (
+          <AlertCircle className="h-3 w-3 flex-shrink-0 text-emerald-600" />
         )}
       </div>
 

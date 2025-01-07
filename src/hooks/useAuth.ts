@@ -8,29 +8,36 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
     
-    const checkSession = async () => {
+    const initAuth = async () => {
       try {
         setLoading(true);
+        console.log('Initializing authentication...');
         
-        // Vérifier la session existante
+        // Check for existing session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
         
         if (error) {
-          console.error('Erreur de session:', error);
+          console.error('Session error:', error);
           setUser(null);
+          localStorage.removeItem('supabase.auth.session');
           return;
         }
 
         if (session) {
+          console.log('Found existing session:', session);
           setUser(session.user);
+          localStorage.setItem('supabase.auth.session', JSON.stringify({ session }));
         } else {
+          console.log('No active session found');
           setUser(null);
+          localStorage.removeItem('supabase.auth.session');
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification de la session:', error);
+        console.error('Error during session check:', error);
         setUser(null);
+        localStorage.removeItem('supabase.auth.session');
       } finally {
         if (mounted) {
           setLoading(false);
@@ -38,18 +45,22 @@ export function useAuth() {
       }
     };
 
-    checkSession();
+    initAuth();
 
-    // Écouter les changements d'authentification
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('Auth state changed:', event, session);
         if (!mounted) return;
         
         if (session) {
+          console.log('New session detected:', session);
           setUser(session.user);
+          localStorage.setItem('supabase.auth.session', JSON.stringify({ session }));
         } else {
+          console.log('Session ended');
           setUser(null);
+          localStorage.removeItem('supabase.auth.session');
         }
       }
     );

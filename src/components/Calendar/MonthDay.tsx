@@ -35,9 +35,7 @@ export default function MonthDay({
 
   return (
     <DroppableDay date={dateStr} isOver={isOver}>
-      <div className={`min-h-[140px] ${
-        !isCurrentMonth ? 'bg-gray-50' : 'bg-white'
-      }`}>
+      <div className="min-h-[140px]">
         <div className="p-2">
           <div className="flex items-center justify-between">
             <time
@@ -57,7 +55,7 @@ export default function MonthDay({
             )}
           </div>
 
-          <div className="mt-2 space-y-1">
+            <div className={`mt-2 space-y-1 ${tasks.length >= 4 ? 'max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300/50 scrollbar-track-transparent hover:scrollbar-thumb-gray-400/50 scrollbar-rounded-full scrollbar-w-1.5' : ''}`}>
             {visibleTasks.map(task => (
               <TaskBadge
                 key={task.id}

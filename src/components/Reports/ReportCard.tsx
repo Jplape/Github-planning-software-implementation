@@ -9,7 +9,7 @@ interface Report {
   equipment: string;
   client: string;
   technician: string;
-  status: 'completed' | 'pending' | 'in_progress';
+  status: 'completed' | 'pending' | 'in_progress' | 'pending-sync';
   description: string;
 }
 

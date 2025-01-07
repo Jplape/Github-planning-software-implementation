@@ -41,7 +41,7 @@ export function useCalendarSync() {
         if (timeCompare !== 0) return timeCompare;
 
         // Finally by priority
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const priorityOrder = { haute: 0, moyenne: 1, basse: 2 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       });
 

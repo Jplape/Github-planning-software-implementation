@@ -3,7 +3,7 @@ import { useTaskStore } from '../store/taskStore';
 import { useCalendarStore } from '../store/calendarStore';
 import { parseISO, isValid } from 'date-fns';
 
-export function useTaskSync() {
+export function useTaskSync(onTaskUpdate?: () => void) {
   const { tasks, lastUpdate } = useTaskStore();
   const { lastSync, updateLastSync } = useCalendarStore();
   const isInitialMount = useRef(true);
@@ -32,6 +32,7 @@ export function useTaskSync() {
     if (lastUpdate > lastSync) {
       validateTasks();
       updateLastSync();
+      onTaskUpdate?.();
     }
   }, [lastUpdate, lastSync, updateLastSync, validateTasks]);
 

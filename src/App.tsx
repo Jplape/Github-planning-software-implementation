@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { supabase } from './lib/supabaseClient';
+import { useEffect } from 'react';
+import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
@@ -12,7 +16,6 @@ import InterventionReports from './pages/InterventionReports';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuthStore } from './store/authStore';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -24,12 +27,47 @@ const queryClient = new QueryClient({
   },
 });
 
+import { registerServiceWorker } from './utils/registerServiceWorker';
+
+async function subscribeToPushNotifications(registration: ServiceWorkerRegistration) {
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+    });
+    
+    // Enregistrer l'abonnement dans Supabase
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .upsert({
+        user_id: useAuthStore.getState().user?.id,
+        subscription: subscription
+      });
+    
+    if (error) {
+      console.error('Error saving push subscription:', error);
+    }
+  }
+}
+
 export default function App() {
   const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    if (user) {
+      registerServiceWorker().then(registration => {
+        if (registration) {
+          subscribeToPushNotifications(registration);
+        }
+      });
+    }
+  }, [user]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
+        <SessionContextProvider supabaseClient={supabase}>
           <BrowserRouter>
             <Toaster
               position="top-right"
@@ -71,6 +109,7 @@ export default function App() {
               </Route>
             </Routes>
           </BrowserRouter>
+        </SessionContextProvider>
       </ErrorBoundary>
     </QueryClientProvider>
   );

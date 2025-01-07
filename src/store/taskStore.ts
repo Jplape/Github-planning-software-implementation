@@ -3,7 +3,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useCalendarStore } from './calendarStore';
 import { Task } from '../types/task';
-import { generateDemoTasks } from '../data/demoTasks';
+import { exampleInterventions } from '../data/exampleInterventions';
+import { supabase } from '../lib/supabaseClient';
 
 interface Stats {
   activeInterventions: number;
@@ -33,6 +34,8 @@ interface TaskState {
       endDate: Date;
     };
   };
+  init: () => Promise<void>;
+  subscribeToTasks: () => any;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -45,11 +48,35 @@ interface TaskState {
 }
 
 export const useTaskStore = create<TaskState>()(
-  persist(
+  persist<TaskState>(
     (set, get) => ({
-      tasks: generateDemoTasks(),
+      tasks: [],
       lastTaskId: 0,
       lastUpdate: Date.now(),
+
+      // Initialize store by loading tasks from Supabase
+      init: async () => {
+        try {
+          const { data, error } = await supabase
+            .from('tasks')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+          if (error) throw error;
+
+          set({
+            tasks: data,
+            lastUpdate: Date.now()
+          });
+        } catch (error) {
+          console.error('Error initializing tasks:', error);
+          // Fallback to demo tasks if Supabase fails
+          set({
+            tasks: exampleInterventions,
+            lastUpdate: Date.now()
+          });
+        }
+      },
       stats: {
         activeInterventions: 0,
         completedTasks: 0,
@@ -68,44 +95,124 @@ export const useTaskStore = create<TaskState>()(
       },
       filters: {},
 
-      addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+      addTask: async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
         const now = new Date().toISOString();
-        const nextId = get().lastTaskId + 1;
-        const taskId = `TASK-${nextId.toString().padStart(3, '0')}`;
+        const tempId = `temp-${Date.now()}`;
         
-        const newTask = {
-          ...task,
-          id: taskId,
-          createdAt: now,
-          updatedAt: now,
-        };
-
+        // Optimistic update
         set((state) => ({
-          tasks: [...state.tasks, newTask],
-          lastTaskId: nextId,
+          tasks: [...state.tasks, {
+            ...task,
+            id: tempId,
+            createdAt: now,
+            updatedAt: now,
+            status: 'pending-sync'
+          }],
           lastUpdate: Date.now()
         }));
-        useCalendarStore.getState().updateLastSync();
+        
+        try {
+          // Try to sync immediately
+          const { data, error } = await supabase
+            .from('tasks')
+            .insert({
+              ...task,
+              created_at: now,
+              updated_at: now
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          // Update with real ID
+          set((state) => ({
+            tasks: state.tasks.map(t => 
+              t.id === tempId ? { ...data, status: 'synced' } : t
+            ),
+            lastUpdate: Date.now()
+          }));
+          
+          useCalendarStore.getState().updateLastSync();
+        } catch (error) {
+          console.error('Error adding task:', error);
+          // Cache for later sync
+          const cache = await caches.open('api-cache');
+          await cache.put(
+            new Request('/api/tasks'),
+            new Response(JSON.stringify({
+              method: 'POST',
+              body: {
+                ...task,
+                id: tempId,
+                createdAt: now,
+                updatedAt: now
+              }
+            }))
+          );
+          
+          // Register sync
+          const registration = await navigator.serviceWorker.ready;
+          await registration.sync.register('sync-tasks');
+          throw error;
+        }
       },
 
-      updateTask: (id: string, updates: Partial<Task>) => {
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id
-              ? { ...task, ...updates, updatedAt: new Date().toISOString() }
-              : task
-          ),
-          lastUpdate: Date.now()
-        }));
-        useCalendarStore.getState().updateLastSync();
+      updateTask: async (id: string, updates: Partial<Task>) => {
+        try {
+          const now = new Date().toISOString();
+          
+          // Update in Supabase
+          const { data, error } = await supabase
+            .from('tasks')
+            .update({
+              ...updates,
+              updated_at: now
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          // Update local state
+          set((state) => ({
+            tasks: state.tasks.map((task) =>
+              task.id === id
+                ? { ...task, ...data }
+                : task
+            ),
+            lastUpdate: Date.now()
+          }));
+          
+          useCalendarStore.getState().updateLastSync();
+        } catch (error) {
+          console.error('Error updating task:', error);
+          throw error;
+        }
       },
 
-      deleteTask: (id: string) => {
-        set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== id),
-          lastUpdate: Date.now()
-        }));
-        useCalendarStore.getState().updateLastSync();
+      deleteTask: async (id: string) => {
+        try {
+          // Delete from Supabase
+          const { error } = await supabase
+            .from('tasks')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          // Update local state
+          set((state) => ({
+            tasks: state.tasks.filter((task) => task.id !== id),
+            lastUpdate: Date.now()
+          }));
+          
+          useCalendarStore.getState().updateLastSync();
+        } catch (error) {
+          console.error('Error deleting task:', error);
+          throw error;
+        }
       },
 
       moveTask: (taskId: string, newDate: string) => {
@@ -176,6 +283,42 @@ export const useTaskStore = create<TaskState>()(
           }
         }));
       },
+
+      // Initialize realtime subscription
+      subscribeToTasks: () => {
+        return supabase
+          .channel('tasks')
+          .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'tasks'
+          }, (payload) => {
+            switch (payload.eventType) {
+              case 'INSERT':
+                set((state) => ({
+                  tasks: [...state.tasks, payload.new as Task],
+                  lastUpdate: Date.now()
+                }));
+                break;
+              case 'UPDATE':
+                set((state) => ({
+                  tasks: state.tasks.map((task) =>
+                    task.id === payload.new.id ? payload.new as Task : task
+                  ),
+                  lastUpdate: Date.now()
+                }));
+                break;
+              case 'DELETE':
+                set((state) => ({
+                  tasks: state.tasks.filter((task) => task.id !== (payload.old as Task).id),
+                  lastUpdate: Date.now()
+                }));
+                break;
+            }
+            useCalendarStore.getState().updateLastSync();
+          })
+          .subscribe();
+      },
     }),
     {
       name: 'task-storage',
@@ -183,7 +326,35 @@ export const useTaskStore = create<TaskState>()(
       partialize: (state) => ({
         tasks: state.tasks,
         lastTaskId: state.lastTaskId,
-        lastUpdate: state.lastUpdate
+        lastUpdate: state.lastUpdate,
+        stats: {
+          activeInterventions: 0,
+          completedTasks: 0,
+          pendingTasks: 0,
+          unassignedTasks: 0,
+          highPriorityTasks: 0,
+          todayTasks: 0,
+          todayCompletedTasks: 0,
+          activeTechnicians: 0,
+          availableTechnicians: 0,
+          totalTasks: 0,
+          totalMembers: 0,
+          totalWeeklyInterventions: 0,
+          completedWeeklyInterventions: 0,
+          weeklyCompletionPercentage: '0.0'
+        },
+        filters: {},
+        init: () => Promise.resolve(),
+        subscribeToTasks: () => {},
+        addTask: () => {},
+        updateTask: () => {},
+        deleteTask: () => {},
+        moveTask: () => {},
+        getTasksByDate: () => [],
+        getTasksByDateRange: () => [],
+        getTechnicianTasks: () => [],
+        clearFilters: () => {},
+        setDateRangeFilter: () => {}
       })
     }
   )
