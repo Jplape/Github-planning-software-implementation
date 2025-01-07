@@ -30,7 +30,6 @@
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.1",
     "recharts": "^2.12.1",
-    "supabase": "^2.2.1",
     "tailwind-scrollbar": "^2.0.1",
     "vite-plugin-pwa": "^0.21.1",
     "zustand": "^4.5.1"
@@ -48,6 +47,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.35",
+    "supabase": "^2.2.1",
     "tailwindcss": "^3.4.1",
     "terser": "^5.27.2",
     "ts-node": "^10.9.2",

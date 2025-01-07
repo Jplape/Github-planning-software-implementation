@@ -3,7 +3,7 @@ import { Plus, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useCalendarStore } from '../store/calendarStore';
 import TaskFilters from '../components/Tasks/TaskFilters';
-import NewTaskModal from '../components/Calendar/NewTaskModal';
+import TaskForm from '../components/Tasks/TaskForm';
 import { filterTasks } from '../utils/taskFilters';
 import { useTaskSync } from '../hooks/useTaskSync';
 import { format } from 'date-fns';
@@ -39,13 +39,16 @@ export default function Tasks() {
   useTaskSync(() => refreshCalendar());
 
   // Get unique clients and equipments for filters
-  const clients = Array.from(new Set(tasks.map(task => task.client)));
+  const clients = Array.from(new Set(tasks
+    .map(task => task.intervention?.client_id)
+    .filter((client): client is string => !!client)
+  ));
   const sortedAndFilteredTasks = useMemo(() => {
     let filteredTasks = filterTasks(
       tasks.filter(task =>
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (task.equipment && task.equipment.toLowerCase().includes(searchTerm.toLowerCase()))
+        task.intervention?.client_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (task.intervention?.equipment && task.intervention.equipment.toLowerCase().includes(searchTerm.toLowerCase()))
       ),
       filters
     );
@@ -61,15 +64,15 @@ export default function Tasks() {
           comparison = a.title.localeCompare(b.title);
           break;
         case 'date':
-          const dateA = a.date && !isNaN(new Date(a.date).getTime()) ? new Date(a.date).getTime() : 0;
-          const dateB = b.date && !isNaN(new Date(b.date).getTime()) ? new Date(b.date).getTime() : 0;
+          const dateA = a.intervention?.date && !isNaN(new Date(a.intervention.date).getTime()) ? new Date(a.intervention.date).getTime() : 0;
+          const dateB = b.intervention?.date && !isNaN(new Date(b.intervention.date).getTime()) ? new Date(b.intervention.date).getTime() : 0;
           comparison = dateA - dateB;
           break;
         case 'status':
           comparison = a.status.localeCompare(b.status);
           break;
         case 'technicianId':
-          comparison = (a.technicianId || '').localeCompare(b.technicianId || '');
+          comparison = (a.intervention?.technician_id || '').localeCompare(b.intervention?.technician_id || '');
           break;
       }
 
@@ -212,8 +215,8 @@ export default function Tasks() {
                     {task.title}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {task.date && !isNaN(new Date(task.date).getTime()) ? (
-                      format(new Date(task.date), 'dd MMMM yyyy', { locale: fr })
+                    {task.intervention?.date && !isNaN(new Date(task.intervention.date).getTime()) ? (
+                      format(new Date(task.intervention.date), 'dd MMMM yyyy', { locale: fr })
                     ) : (
                       <span className="text-gray-400">Date invalide</span>
                     )}
@@ -230,7 +233,7 @@ export default function Tasks() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {task.technicianId || 'Non assigné'}
+                    {task.intervention?.technician_id || 'Non assigné'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
@@ -250,14 +253,19 @@ export default function Tasks() {
         </div>
       </div>
 
-      <NewTaskModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedTask(null);
-        }}
-        taskToEdit={selectedTask}
-      />
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <TaskForm
+              initialData={selectedTask || undefined}
+              onSubmit={() => {
+                setIsModalOpen(false);
+                setSelectedTask(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

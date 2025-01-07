@@ -73,7 +73,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
         navigateFallback: 'index.html'
       }
@@ -108,6 +108,10 @@ export default defineConfig({
       protocol: 'ws',
       host: 'localhost'
     },
+    headers: {
+      'Service-Worker-Allowed': '/',
+      'Content-Type': 'application/javascript'
+    }
   },
   envPrefix: 'VITE_',
   preview: {

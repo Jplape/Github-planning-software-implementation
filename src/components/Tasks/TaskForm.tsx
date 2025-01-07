@@ -10,12 +10,12 @@ interface TaskFormProps {
 }
 
 const timeOptions = [
-  '07:30', '07:45', '08:00', '08:15', '08:30', '08:45',
-  '09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30', '10:45',
-  '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45',
-  '13:00', '13:15', '13:30', '13:45', '14:00', '14:15', '14:30', '14:45',
-  '15:00', '15:15', '15:30', '15:45', '16:00', '16:15', '16:30', '16:45',
-  '17:00', '17:15', '17:30', '17:45', '18:00'
+  '07:30', '08:00', '08:30',
+  '09:00', '09:30', '10:00', '10:30',
+  '11:00', '11:30', '12:00', '12:30',
+  '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30',
+  '17:00', '17:30', '18:00'
 ];
 
 interface FormData {
@@ -32,6 +32,16 @@ interface FormData {
   priority: Task['priority'];
   technicianId: string;
   status: Task['status'];
+  intervention?: {
+    client_id: string;
+    date: string;
+    start_time?: string;
+    duration?: string;
+    equipment?: string;
+    serial_number?: string;
+    intervention_number?: number;
+    technician_id?: string;
+  };
 }
 
 const defaultFormData: FormData = {
@@ -55,11 +65,11 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
   const [formData, setFormData] = useState<FormData>(() => ({
     ...defaultFormData,
     ...initialData,
-    date: initialData?.date || defaultFormData.date,
-    startTime: initialData?.startTime || defaultFormData.startTime,
+    date: initialData?.intervention?.date || defaultFormData.date,
+    startTime: initialData?.intervention?.start_time || defaultFormData.startTime,
     endTime: calculateEndTime(
-      initialData?.startTime || defaultFormData.startTime,
-      initialData?.duration || 60
+      initialData?.intervention?.start_time || defaultFormData.startTime,
+      initialData?.intervention?.duration ? parseInt(initialData.intervention.duration) : 60
     )
   }));
 
@@ -69,8 +79,8 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
         ...prev,
         ...initialData,
         endTime: calculateEndTime(
-          initialData.startTime || prev.startTime,
-          initialData.duration || 60
+          initialData.intervention?.start_time || prev.startTime,
+          initialData.intervention?.duration ? parseInt(initialData.intervention.duration) : 60
         )
       }));
     }
@@ -96,17 +106,23 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
     
     onSubmit({
       ...formData,
-      duration
+      intervention: {
+        ...formData.intervention,
+        client_id: formData.client,
+        date: formData.date,
+        start_time: formData.startTime,
+        duration: duration.toString()
+      }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto h-[calc(100vh-14rem)] overflow-y-auto">
       {/* Section Informations générales */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Informations générales</h4>
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">Informations générales</h4>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700">Titre</label>
             <input
@@ -142,8 +158,8 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
       </div>
 
       {/* Section Équipement */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
+        <div className="flex items-center justify-between mb-2">
           <h4 className="text-sm font-medium text-gray-900">Informations sur l'équipement</h4>
           <div className="flex items-center text-xs text-gray-500">
             <Info className="h-4 w-4 mr-1" />
@@ -151,7 +167,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700">Équipement</label>
             <input
@@ -199,10 +215,10 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
       </div>
 
       {/* Section Planification */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Planification</h4>
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">Planification</h4>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700">Date d'intervention</label>
             <div className="mt-1 relative">
@@ -288,10 +304,10 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
       </div>
 
       {/* Section État */}
-      <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">État</h4>
+      <div className="bg-gray-50 p-3 rounded-lg space-y-3">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">État</h4>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700">Priorité</label>
             <select
@@ -321,7 +337,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
         </div>
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-3">
         <button
           type="submit"
           className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

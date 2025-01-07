@@ -1,21 +1,21 @@
 export interface Task {
-  number: number;
   id: string;
   title: string;
-  client: string;
-  date: string;
-  startTime: string;
-  duration: number;
-  technicianId?: string;
+  description?: string;
   status: 'pending' | 'in_progress' | 'completed' | 'pending-sync';
   priority: 'haute' | 'moyenne' | 'basse';
-  progress?: number;
-  description?: string;
-  equipment?: string;
-  brand?: string;
-  model?: string;
-  serialNumber?: string;
-  createdAt: string;
-  updatedAt: string;
-  reportNumber?: string;
+  due_date: string;
+  assigned_to: string;
+  created_at: string;
+  updated_at: string;
+  intervention?: {
+    client_id: string;
+    date: string;
+    start_time?: string;
+    duration?: string;
+    equipment?: string;
+    serial_number?: string;
+    intervention_number?: number;
+    technician_id?: string;
+  };
 }
